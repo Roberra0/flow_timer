@@ -7,8 +7,8 @@ class Water {
         
         // Rising water animation parameters
         this.startTime = Date.now();
-        this.animationDuration = 10000; // 10 seconds in milliseconds
-        this.startWaterLevel = this.height * 0.95; // Start at 95% down (visible at bottom)
+        this.animationDuration = 30000; // 30 seconds in milliseconds
+        this.startWaterLevel = this.height * 0.99; // Start at 99% down (very close to bottom)
         this.endWaterLevel = this.height * 0.02;   // End at 2% from top (98% filled - nearly full)
         this.waterLevel = this.startWaterLevel;
         
@@ -30,98 +30,102 @@ class Water {
             });
         }
         
-        // Physics constants for water behavior (old working settings)
-        this.springForce = 0.018;       // How strongly water pulls back to flat position (higher = snappier return)
-        this.damping = 0.985;           // Energy loss over time (higher = smoother, less bouncy waves)
-        this.spread = 0.025;            // How much neighboring points influence each other (higher = waves travel further)
-        this.flatteningThreshold = 1.5; // Energy level below which water switches from spring physics to ambient waves
+        // Physics constants for water behavior (now dynamically controllable)
+        this.springForce = 0.018;       // How strongly water pulls back to flat position
+        this.damping = 0.985;           // Energy loss over time
+        this.spread = 0.025;            // How much neighboring points influence each other
+        this.splashForce = 25;          // How strong the initial splash is
         
-        // Ambient wave parameters (your preferred strong settings)
-        this.ambientTime = 0;           // Time tracker for wave animation progression
-        this.ambientStrength = 35;     // How visible the natural waves are (pixels of movement) - your preferred strength
-        this.ambientSpeed = 0.049;     // How fast the ambient waves move across the surface - your preferred speed
-        this.ambientFrequency1 = 0.008; // Primary wave frequency (lower = broader, slower waves)
-        this.ambientFrequency2 = 0.015; // Secondary wave frequency (adds complexity and natural variation)
+        // Simple click-based physics switching
+        this.lastClickTime = 0;         // When was the last click
+        this.springDuration = 3000;     // How long to use spring physics after a click (milliseconds)
+        
+        // Ambient wave parameters (dynamically controllable)
+        this.ambientTime = 0;           
+        this.ambientStrength = 10;     // Change from 35 to 10
+        this.ambientSpeed = 0.1;       // Change from 0.83 to 0.1
+        this.ambientFrequency1 = 0.308; 
+        this.ambientFrequency2 = 0.015; 
+        
+        
+        // Dynamic control variables (updated by sliders)
+        this.waveResponsiveness = 0.22; // How quickly waves transition to target positions
+        this.meshSmoothing = 0.25;      // How much to smooth the mesh
         
         // Create visual mesh
         this.mesh = new paper.Path();
-        this.mesh.fillColor = '#3498db';
+        this.mesh.fillColor = '#2EC4B6'; // Vibrant teal liquid
         this.mesh.onClick = this.onClick.bind(this);
         
         this.updateMesh();
     }
     
     onClick(event) {
-        // Find closest point
-        const clickX = event.point.x;
-        const pointIndex = Math.round((clickX + this.extensionWidth) / this.spacing);
+        // Record click time for physics switching
+        this.lastClickTime = Date.now();
         
-        if (pointIndex >= 0 && pointIndex < this.totalPoints) {
-            const splashForce = 15;
-            const splashRadius = 12;
-            
-            for (let i = 0; i < this.totalPoints; i++) {
-                const distance = Math.abs(i - pointIndex);
-                if (distance <= splashRadius) {
-                    const falloff = Math.exp(-distance * 0.3);
-                    const force = splashForce * falloff * (0.9 + Math.random() * 0.2);
-                    
-                    if (!this.points[i].fixed) {
-                        this.points[i].y += force;
-                    }
-                }
+        // Find closest point - adjust for extended coordinate system
+        const clickX = event.point.x;
+        
+        // Find the actual closest point by distance
+        let closestIndex = 0;
+        let minDistance = Infinity;
+        
+        for (let i = 0; i < this.totalPoints; i++) {
+            const distance = Math.abs(this.points[i].x - clickX);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestIndex = i;
             }
         }
+        
+        // Create splash effect using dynamic values
+        const splashRadius = 8;  // Radius in point indices
+        
+        for (let i = 0; i < this.totalPoints; i++) {
+            const distance = Math.abs(i - closestIndex);
+            if (distance <= splashRadius) {
+                const falloff = Math.exp(-distance * 0.4);
+                const force = this.splashForce * falloff * (0.8 + Math.random() * 0.4);
+                
+                // Apply downward force (negative) for splash effect
+                this.points[i].y += force;
+                // Add some initial velocity for more dynamic effect
+                this.points[i].velocity += force * 0.3;
+            }
+        }
+        
+        console.log('Splash at point', closestIndex, 'x:', clickX);
     }
     
     update() {
+            // Don't update anything if paused
+        if (this.isPaused) {
+            this.updateMesh(); // Still update the mesh for visual consistency
+            return;
+        }
+
         // Update rising water animation
         const currentTime = Date.now();
         const elapsed = currentTime - this.startTime;
-        const progress = Math.min(elapsed / this.animationDuration, 1); // 0 to 1 over 10 seconds
+        const progress = Math.min(elapsed / this.animationDuration, 1); // 0 to 1 over 30 seconds
         
         // Smoothly interpolate water level from start to end
         const newWaterLevel = this.startWaterLevel + (this.endWaterLevel - this.startWaterLevel) * progress;
         this.waterLevel = newWaterLevel;
         
-        console.log('Progress:', progress.toFixed(2), 'Water level:', this.waterLevel.toFixed(0));
-        
         // Increment ambient time for wave animation
         this.ambientTime += this.ambientSpeed;
         
-        // Calculate system energy from USER interactions (works during rising too)
-        let userInteractionEnergy = 0;
+        // Simple time-based physics switching: use spring physics for a few seconds after click
+        const timeSinceClick = currentTime - this.lastClickTime;
+        const useSpringPhysics = timeSinceClick < this.springDuration;
         
-        for (let i = 0; i < this.totalPoints; i++) {
-            // Calculate what the ambient wave position should be at current water level
-            const normalizedPosition = i / (this.totalPoints - 1);
-            const wave1 = Math.sin((normalizedPosition * Math.PI * 3) + this.ambientTime);
-            const wave2 = Math.sin((normalizedPosition * Math.PI * 5.2) + (this.ambientTime * 1.4));
-            const wave3 = Math.sin((normalizedPosition * Math.PI * 1.8) + (this.ambientTime * 0.7));
-            const combinedWave = (wave1 * 0.5) + (wave2 * 0.3) + (wave3 * 0.2);
-            const expectedAmbientY = this.waterLevel + (combinedWave * this.ambientStrength);
-            
-            // Only count energy that's above what ambient waves would naturally create
-            const displacement = Math.abs(this.points[i].y - expectedAmbientY);
-            const velocity = Math.abs(this.points[i].velocity);
-            
-            // Only count significant deviations from expected ambient motion
-            if (displacement > this.ambientStrength * 0.5 || velocity > 2.0) {
-                userInteractionEnergy += displacement + velocity;
-            }
-        }
-        
-        // Use spring physics when there's user interaction (works during rising)
-        const useSpringPhysics = userInteractionEnergy > this.flatteningThreshold;
-        
-        // Debug: Force ambient waves for now to test
-        const forceAmbient = true;
-        
-        if (!forceAmbient && useSpringPhysics) {
-            // User interaction - use spring-based wave physics
+        if (useSpringPhysics) {
+            // Recent click - use spring-based wave physics
             this.updateSpringPhysics();
         } else {
-            // Resting state - show ambient waves (works during rising)
+            // Resting state - show ambient waves
             this.updateAmbientWaves();
         }
         
@@ -168,7 +172,7 @@ class Water {
                 // Calculate position along the water surface (0 to 1)
                 const normalizedPosition = i / (this.totalPoints - 1);
                 
-                // Combine multiple sine waves for natural complexity
+                // Use the original working wave formula
                 const wave1 = Math.sin((normalizedPosition * Math.PI * 3) + this.ambientTime);
                 const wave2 = Math.sin((normalizedPosition * Math.PI * 5.2) + (this.ambientTime * 1.4));
                 const wave3 = Math.sin((normalizedPosition * Math.PI * 1.8) + (this.ambientTime * 0.7));
@@ -176,12 +180,12 @@ class Water {
                 // Combine waves with different amplitudes
                 const combinedWave = (wave1 * 0.5) + (wave2 * 0.3) + (wave3 * 0.2);
                 
-                // Apply noticeable but gentle displacement
+                // Apply displacement using dynamic responsiveness
                 const targetY = this.waterLevel + (combinedWave * this.ambientStrength);
                 
-                // Smooth transition toward target
+                // Use dynamic responsiveness value
                 const difference = targetY - this.points[i].y;
-                this.points[i].y += difference * 0.05;
+                this.points[i].y += difference * this.waveResponsiveness;
                 
                 // Update velocity for smooth transitions back to spring physics
                 this.points[i].velocity = (this.points[i].y - this.points[i].py) * 0.2;
@@ -236,23 +240,29 @@ class Water {
         this.mesh.lineTo(this.width, this.height);
         this.mesh.closePath();
         
-        // Smooth the path to remove sharp angles
-        this.mesh.smooth({ type: 'catmull-rom', factor: 0.5 });
+        // Smooth the path using dynamic smoothing value
+        this.mesh.smooth({ type: 'catmull-rom', factor: this.meshSmoothing });
     }
     
     resize() {
+        const oldHeight = this.height;
+        
         this.width = paper.view.viewSize.width;
         this.height = paper.view.viewSize.height;
         
-        // Don't reset water level during animation
+        // Calculate current animation progress
         const currentTime = Date.now();
         const elapsed = currentTime - this.startTime;
         const progress = Math.min(elapsed / this.animationDuration, 1);
         
-        if (progress >= 1) {
-            // Animation complete, can reset to final level
-            this.waterLevel = this.height * 0.02; // Nearly at top
-        }
+        // Recalculate water levels for new window size
+        this.startWaterLevel = this.height * 0.99; // Start at 99% down (very close to bottom)
+        this.endWaterLevel = this.height * 0.02;   // End at 2% from top (nearly full)
+        
+        // Recalculate current water level based on progress and new window size
+        this.waterLevel = this.startWaterLevel + (this.endWaterLevel - this.startWaterLevel) * progress;
+        
+        console.log('Resize - Progress:', progress.toFixed(2), 'New water level:', this.waterLevel.toFixed(0), 'New height:', this.height);
         
         // Recalculate extended dimensions
         this.extensionWidth = this.width * 0.2;

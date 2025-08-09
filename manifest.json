@@ -1,13 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "25-Minute Timer",
-  "description": "A simple 25-minute countdown timer.",
-  "version": "1.0",
+  "name": "Rhythm + Flow: Structured Focus Timer",
+  "description": "🌊 Rhythm + Flow is a productivity timer with a structured focus method to help you lock in & stay productive 🌊",
+  "version": "1.2",
   "action": {
-    "default_title": "Open Timer"
+    "default_title": "Rhythm + Flow",
+    "default_icon": "flow_icon.png"
+  },
+  "icons": {
+    "128": "flow_icon.png"
   },
   "background": {
     "service_worker": "background.js" 
   },
-  "permissions": []
+  "permissions": [],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["settings.html", "settings.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

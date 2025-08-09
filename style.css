@@ -1,118 +1,340 @@
-/* Water animation background */
+/* Complete style.css with all updates */
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: var(--bg-color, #FFF6E5);
+  color: white;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  transition: background-color 0.3s ease;
+}
+
+/* Work Mode Background */
+body.work-mode {
+  background: var(--work-bg, #FFF6E5);
+  transition: background-color 0.3s ease;
+}
+
+/* Break Mode Background - Sunny Yellow */
+body.break-mode {
+  background: var(--break-bg, #FFCD00) !important;
+  color: #333;
+  transition: background-color 0.3s ease;
+}
+
+/* Water Canvas */
 .water-background {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1; /* Behind controls but still interactive */
+  z-index: 1;
   opacity: 0;
   transition: opacity 0.5s ease;
-  pointer-events: auto; /* Make sure water can receive clicks */
+  pointer-events: none;
 }
 
 .water-background.visible {
   opacity: 1;
+  pointer-events: all;
 }
 
-/* Make everything scale with window size */
-body {
-  transition: background-color 0.5s ease;
-  font-family: Arial, sans-serif;
-  display: flex;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
-  background: #f0f0f0;
-  margin: 0;
-  padding: 2vw;
-  position: relative;
-}
-
+/* Timer Container - Side by Side Layout with Smooth Swapping Motion */
 .timer-container {
-  text-align: center;
-  width: 100%;
-  max-width: 90vw;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4vw;
-  position: relative;
-  flex-direction: row-reverse;
-  z-index: 10; /* Ensure controls are above water */
-  pointer-events: none; /* Let clicks pass through container */
+  gap: clamp(20px, 4vw, 40px);
+  z-index: 10;
+  width: auto;
 }
 
+/* Timer Text - Responsive with smooth movement */
 #timer {
-  font-size: 12vw;
-  margin: 0;
-  line-height: 1;
-  word-break: keep-all;
-  flex: 0 0 auto;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-  z-index: 11;
-  pointer-events: none; /* Let clicks pass through timer text */
+  font-size: clamp(1.5rem, 8vw, 4rem) !important;
+  font-weight: bold;
+  margin-bottom: 0;
+  text-shadow: 0 2px 4px rgba(255,255,255,0.4);
+  color: var(--text-color, #222222);
+  transition: transform 0.6s ease; /* Smooth movement transition */
+  transform: translateX(0);
+  text-align: center;
+  min-width: 0;
+  flex-shrink: 1;
+
 }
 
+/* Button with smooth movement */
 #startStopBtn {
-  font-size: 4vw;
-  width: 8vw;
-  height: 8vw;
-  min-width: 60px;
-  min-height: 60px;
-  border: none;
-  background: #007bff;
-  color: white;
+  width: clamp(50px, 12vw, 120px) !important;
+  height: clamp(50px, 12vw, 120px) !important;
   border-radius: 50%;
-  cursor: pointer;
+  border: none;
+  background: var(--play-btn, #2EC4B6) !important;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  flex: 0 0 auto;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  z-index: 11;
-  pointer-events: auto; /* Button should still be clickable */
+  cursor: pointer;
+  transition: all 0.6s ease; /* Smooth movement and color transition */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  min-width: 40px !important;
+  min-height: 40px !important;
+  font-size: 0;
+  transform: translateX(0);
+  flex-shrink: 0;
+
 }
 
-/* When running, slide both elements to swap positions */
+/* When running - smooth sliding motion */
 .timer-container.running #timer {
-  transform: translateX(-20vw);
+  transform: translateX(calc(clamp(50px, 12vw, 120px) + 30px)); /* Slide right by button width + gap */
 }
 
 .timer-container.running #startStopBtn {
-  transform: translateX(20vw);
+  transform: translateX(calc(-1 * (clamp(1.5rem, 8vw, 4rem) * 4 + 30px))); /* Slide left by approximate timer width + gap */
+  background: var(--stop-btn, #D2691E) !important;
+}
+
+/* Break mode timer text color */
+body.break-mode #timer {
+  color: var(--break-text, #333);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+
+#startStopBtn:hover {
+  background: var(--play-hover, #5DD5CD) !important;
+  transform: translateX(0) scale(1.05); /* Keep position, just scale */
 }
 
 #startStopBtn .material-icons {
-  font-size: 7vw;
-  min-font-size: 48px;
+  font-size: clamp(20px, 6vw, 48px) !important;
+  line-height: 1;
 }
 
-#startStopBtn:hover {
-  background: #0056b3;
-  transform: scale(1.05);
+/* Running state hover - maintain position and orange color */
+.timer-container.running #startStopBtn:hover {
+  background: var(--stop-hover, #FF7F00) !important;
+  transform: translateX(calc(-1 * (clamp(1.5rem, 8vw, 4rem) * 4 + 30px))) scale(1.05); /* Keep slide position, add scale */
 }
 
-/* Work mode - water visible, text white for contrast */
-body.work-mode {
-  background-color: #111;
+/* For very small screens - maintain smooth sliding */
+@media (max-width: 300px) {
+  #startStopBtn {
+    width: clamp(35px, 15vw, 60px) !important;
+    height: clamp(35px, 15vw, 60px) !important;
+    min-width: 35px !important;
+    min-height: 35px !important;
+  }
+  
+  #startStopBtn .material-icons {
+    font-size: clamp(16px, 8vw, 30px) !important;
+  }
+  
+  .timer-container {
+    gap: 20px; /* Smaller gap for small screens */
+  }
+  
+  /* Adjust sliding distances for small screens */
+  .timer-container.running #timer {
+    transform: translateX(calc(clamp(35px, 15vw, 60px) + 20px)); /* Smaller slide distance */
+  }
+
+  .timer-container.running #startStopBtn {
+    transform: translateX(calc(-1 * (clamp(1rem, 10vw, 2.5rem) * 4 + 20px))); /* Smaller slide distance */
+  }
+  
+  .timer-container.running #startStopBtn:hover {
+    transform: translateX(calc(-1 * (clamp(1rem, 10vw, 2.5rem) * 4 + 20px))) scale(1.05);
+  }
 }
 
-body.work-mode #timer {
+/* Wave Controls Panel */
+#waveControls {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.9);
   color: white;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  padding: 15px;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  z-index: 1000;
+  min-width: 220px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Break mode - soft energizing yellow, no water */
-body.break-mode {
-  background-color: #fff9e6;
+#waveControls label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #ffffff;
 }
 
-body.break-mode #timer {
-  color: #333;
-  text-shadow: none;
+#waveControls input[type="range"] {
+  width: 100%;
+  accent-color: #2EC4B6 !important; /* Vibrant teal for ambient wave sliders */
+  margin-bottom: 5px;
+}
+
+/* Spring physics sliders - red accent */
+#waveControls input[type="range"]#splashSlider,
+#waveControls input[type="range"]#springSlider,
+#waveControls input[type="range"]#dampingSlider,
+#waveControls input[type="range"]#spreadSlider,
+#waveControls input[type="range"]#durationSlider {
+  accent-color: #FF4C4C !important; /* Bright red for spring physics sliders */
+}
+
+/* Control value colors */
+#strengthValue, #speedValue, #responseValue, #smoothValue {
+  color: #2EC4B6 !important; /* Teal for ambient wave values */
+}
+
+#splashValue, #springValue, #dampingValue, #spreadValue, #durationValue {
+  color: #FF4C4C !important; /* Red for spring physics values */
+}
+
+
+/* Control group styling */
+#waveControls > div {
+  margin-bottom: 12px;
+}
+
+#waveControls > div:last-of-type {
+  margin-bottom: 15px;
+}
+
+/* Separator line for spring controls */
+#waveControls div[style*="border-top"] {
+  border-top: 1px solid #555 !important;
+  padding-top: 15px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Hidden controls state */
+#waveControls.hidden .control-group {
+  display: none;
+}
+
+/* Responsive adjustments for controls */
+@media (max-width: 400px) {
+  #waveControls {
+    min-width: 180px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 300px) {
+  #waveControls {
+    min-width: 160px;
+    font-size: 10px;
+    padding: 12px;
+  }
+}
+
+.settings-button {
+  position: absolute;
+  top: calc(100% + 15px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(30px, 8vw, 60px);
+  height: clamp(30px, 8vw, 60px);
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  pointer-events: auto;
+  z-index: 12;
+}
+
+.settings-button:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.settings-button .material-icons {
+  font-size: clamp(16px, 4vw, 30px);
+}
+
+/* Hide during break mode */
+body.break-mode .settings-button {
+  display: none;
+}
+
+.pause-button .material-icons {
+  font-size: 20px;
+}
+
+body.work-mode .timer-container.running .pause-button {
+  display: flex;
+}
+
+/* Responsive layout for narrow windows */
+@media (max-width: 250px) {
+  .timer-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Disable sliding animations on small screens */
+  .timer-container.running #timer,
+  .timer-container.running #startStopBtn {
+    transform: none !important;
+  }
+  
+  /* Adjust timer text size for vertical layout */
+  #timer {
+    font-size: clamp(1.2rem, 6vw, 2.5rem) !important;
+  }
+  
+  /* Adjust button size for vertical layout */
+  #startStopBtn {
+    width: clamp(40px, 10vw, 80px) !important;
+    height: clamp(40px, 10vw, 80px) !important;
+  }
+  
+  #startStopBtn .material-icons {
+    font-size: clamp(18px, 5vw, 35px) !important;
+  }
+  
+  /* Position settings button differently in vertical layout */
+.settings-button {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 10px auto 0 auto;
+  align-self: center;
+}
+}
+
+/* For very narrow windows */
+@media (max-width: 180px) {
+  .timer-container {
+    gap: 15px;
+  }
+  
+  #timer {
+    font-size: clamp(1rem, 8vw, 2rem) !important;
+  }
 }
