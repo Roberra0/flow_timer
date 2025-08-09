@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>25-Minute Timer</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <!-- Water animation canvas (hidden by default) -->
+  <canvas id="fluidCanvas" class="water-background"></canvas>
+  
+  <div class="timer-container">
+    <h1 id="timer">Work</h1>
+    <button id="startStopBtn">
+      <span class="material-icons">play_arrow</span>
+    </button>
+  </div>
+  
+  <!-- Load water animation scripts -->
+  <script src="paper-core.min.js"></script>
+  <script src="water.js"></script>
+  <script src="fluid.js"></script>
+  
+  <!-- Load timer script -->
+  <script src="script.js"></script>
+</body>
+</html>

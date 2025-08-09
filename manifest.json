@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "25-Minute Timer",
+  "description": "A simple 25-minute countdown timer.",
+  "version": "1.0",
+  "action": {
+    "default_title": "Open Timer"
+  },
+  "background": {
+    "service_worker": "background.js" 
+  },
+  "permissions": []
+}

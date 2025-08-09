@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Timer Settings</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+      margin: 0;
+    }
+    
+    .setting-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    select, input[type="range"] {
+      width: 100%;
+      padding: 5px;
+    }
+    
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    
+    button:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="setting-group">
+    <label for="themeSelect">Theme:</label>
+    <select id="themeSelect">
+      <option value="ocean">Hawaii</option>
+      <option value="espresso">Espresso</option>
+    </select>
+  </div>
+  
+  <div class="setting-group">
+    <label for="workSlider">Work Time: <span id="workValue">25</span> min</label>
+    <input type="range" id="workSlider" min="5" max="60" value="25" step="1">
+  </div>
+  
+  <div class="setting-group">
+    <label for="shortBreakSlider">Short Break: <span id="shortBreakValue">5</span> min</label>
+    <input type="range" id="shortBreakSlider" min="1" max="30" value="5" step="1">
+  </div>
+  
+  <div class="setting-group">
+    <label for="longBreakSlider">Long Break: <span id="longBreakValue">15</span> min</label>
+    <input type="range" id="longBreakSlider" min="5" max="60" value="15" step="1">
+  </div>
+  
+  <button id="saveBtn">Save</button>
+  
+  <script src="settings.js"></script>
+</body>
+</html>
